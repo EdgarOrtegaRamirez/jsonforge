@@ -120,9 +120,13 @@ func newPrettyCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "pretty [file]",
 		Short: "Pretty-print JSON with indentation",
-		Args:  cobra.ExactArgs(1),
+		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			data, err := readJSON(args[0])
+			path := "-"
+			if len(args) > 0 {
+				path = args[0]
+			}
+			data, err := readJSON(path)
 			if err != nil {
 				return err
 			}
