@@ -16,7 +16,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var version = "1.0.0"
+var version = "2.0.0"
 
 func main() {
 	if err := newRootCmd().Execute(); err != nil {
@@ -44,6 +44,8 @@ func newRootCmd() *cobra.Command {
 		newUnflattenCmd(),
 		newValidateCmd(),
 		newConvertCmd(),
+		newQueryCmd(),
+		newInfoCmd(),
 		newVersionCmd(),
 	)
 

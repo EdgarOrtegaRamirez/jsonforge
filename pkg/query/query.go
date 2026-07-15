@@ -4,6 +4,7 @@ package query
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -89,10 +90,15 @@ func parseSegment(s string) (PathSegment, error) {
 		return PathSegment{Wildcard: true}, nil
 	}
 
-	// Bracket notation: ["key"] or [key] or [0] or [last] or [-1]
+	// Bracket notation: ["key"] or [key] or [0] or [last] or [-1] or [*]
 	if strings.HasPrefix(s, "[") && strings.HasSuffix(s, "]") {
 		inner := s[1 : len(s)-1]
 		inner = strings.TrimSpace(inner)
+
+		// [*] wildcard — match all elements
+		if inner == "*" {
+			return PathSegment{Wildcard: true}, nil
+		}
 
 		// Remove quotes
 		if len(inner) >= 2 && (inner[0] == '"' || inner[0] == '\'') {
@@ -392,4 +398,66 @@ func ParseJSON(input string) (interface{}, error) {
 	decoder.UseNumber()
 	err := decoder.Decode(&result)
 	return result, err
+}
+
+// SortSlice sorts an array of objects by a field name.
+func SortSlice(arr []interface{}, field string, desc bool) {
+	sort.SliceStable(arr, func(i, j int) bool {
+		a, _ := getNested(arr[i], field)
+		b, _ := getNested(arr[j], field)
+
+		ai := toFloat(a)
+		bi := toFloat(b)
+
+		if ai != bi {
+			return ai < bi
+		}
+
+		// Fall back to string comparison
+		asc := fmt.Sprintf("%v", a) < fmt.Sprintf("%v", b)
+		return asc
+	})
+
+	if desc {
+		for i, j := 0, len(arr)-1; i < j; i, j = i+1, j-1 {
+			arr[i], arr[j] = arr[j], arr[i]
+		}
+	}
+}
+
+// getNested retrieves a nested value from an object by dot-separated path.
+func getNested(data interface{}, path string) (interface{}, bool) {
+	keys := strings.Split(path, ".")
+	current := data
+	for _, key := range keys {
+		switch v := current.(type) {
+		case map[string]interface{}:
+			var ok bool
+			current, ok = v[key]
+			if !ok {
+				return nil, false
+			}
+		default:
+			return nil, false
+		}
+	}
+	return current, true
+}
+
+// toFloat converts a JSON value to float64 for comparison.
+func toFloat(v interface{}) float64 {
+	switch val := v.(type) {
+	case float64:
+		return val
+	case int:
+		return float64(val)
+	case int64:
+		return float64(val)
+	case string:
+		var f float64
+		fmt.Sscanf(val, "%f", &f)
+		return f
+	default:
+		return 0
+	}
 }
