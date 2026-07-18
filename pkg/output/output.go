@@ -170,10 +170,10 @@ func (w *InfoWriter) Write(data interface{}, out io.Writer) error {
 }
 
 type structureInfo struct {
-	Type         string
-	Depth        int
-	Keys         int
-	ArrayLength  int
+	Type        string
+	Depth       int
+	Keys        int
+	ArrayLength int
 }
 
 func analyzeStructure(data interface{}, depth int) structureInfo {

@@ -6,7 +6,7 @@ import (
 
 func TestValidateValid(t *testing.T) {
 	schema := map[string]interface{}{
-		"type": "object",
+		"type":     "object",
 		"required": []interface{}{"name", "age"},
 		"properties": map[string]interface{}{
 			"name": map[string]interface{}{"type": "string"},
@@ -25,7 +25,7 @@ func TestValidateValid(t *testing.T) {
 
 func TestValidateMissingRequired(t *testing.T) {
 	schema := map[string]interface{}{
-		"type": "object",
+		"type":     "object",
 		"required": []interface{}{"name", "age"},
 	}
 	data := map[string]interface{}{
